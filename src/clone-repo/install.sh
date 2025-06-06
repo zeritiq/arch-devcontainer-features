@@ -19,7 +19,7 @@ USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
 # ** Utility functions **
 # **************************
 _UTILS_SETUP_SCRIPT=$(mktemp)
-curl -sSL -o "$_UTILS_SETUP_SCRIPT" https://raw.githubusercontent.com/bartventer/arch-devcontainer-features/main/scripts/archlinux_util_setup.sh
+curl -sSL -o "$_UTILS_SETUP_SCRIPT" https://raw.githubusercontent.com/zeritiq/arch-devcontainer-features/master/vendor/bartventer-features/scripts/archlinux_util_setup.sh
 sh "$_UTILS_SETUP_SCRIPT"
 rm -f "$_UTILS_SETUP_SCRIPT"
 
