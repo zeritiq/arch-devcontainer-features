@@ -19,8 +19,5 @@
             "default": "",
             "description": "Specific branch to clone (optional)"
         }
-    },
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils"
-    ]
+    }
 }
