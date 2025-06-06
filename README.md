@@ -93,19 +93,45 @@ For using local features:
 
 ## 🔧 Development
 
-### Updating Dependencies
+### Feature Dependencies
+
+All features in this repository install after `ghcr.io/bartventer/arch-devcontainer-features/common-utils` to ensure proper installation order and use scripts from the vendored `bartventer-features` submodule.
+
+**Important Notes:**
+- Features dynamically download scripts based on the current submodule commit hash
+- Script versions are only updated when the submodule is updated to a new commit/tag
+- Features will fallback to `main` branch if submodule commit is not found
+
+### Updating Dependencies (Submodule)
 
 ```bash
+# Check current submodule version
+git submodule status
+
 # Check available versions
 cd vendor/bartventer-features
 git fetch --tags
 git tag --sort=-version:refname | head -10
 
-# Update to new version
+# Update to new version (recommended: use tags)
 git checkout v1.25.0
 cd ../..
 git add vendor/bartventer-features
 git commit -m "Update bartventer-features to v1.25.0"
+
+# Verify the commit hash that will be used
+git ls-tree HEAD vendor/bartventer-features
+```
+
+### Script URL Generation
+
+Features automatically generate URLs using the submodule commit hash:
+```bash
+# Current submodule commit
+COMMIT=$(git ls-tree HEAD vendor/bartventer-features | awk '{print $3}')
+
+# Generated URL
+URL="https://raw.githubusercontent.com/bartventer/arch-devcontainer-features/${COMMIT}/scripts/archlinux_util_setup.sh"
 ```
 
 ### Testing

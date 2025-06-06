@@ -54,13 +54,28 @@ Yay is an AUR helper written in Go that allows easy installation of packages fro
 - **Operating System**: Arch Linux
 - **Requirements**: base-devel, git (installed automatically if needed)
 
+## Installation Order
+
+This feature installs after:
+- **`ghcr.io/bartventer/arch-devcontainer-features/common-utils`** - Provides base Arch Linux utilities and ensures proper installation order
+
 ## Architecture
 
 This feature uses a stable architecture with Git submodules:
 
 - **Arch Linux Utilities**: Used through [bartventer/arch-devcontainer-features](https://github.com/bartventer/arch-devcontainer-features)
-- **Stable Version**: Pinned to v1.24.5 via submodule
-- **Reliability**: Local copy ensures operation without external service dependencies
+- **Stable Version**: Scripts downloaded from submodule commit hash (currently pinned to specific commit)
+- **Dynamic URLs**: Install script dynamically determines submodule commit and downloads from correct version
+- **Reliability**: Falls back to `main` branch if specific commit is not found
+
+### Script Version Updates
+
+The feature downloads utility scripts based on the current submodule commit hash. Script versions are only updated when:
+1. The bartventer-features submodule is updated to a new commit/tag
+2. Changes are committed to this repository
+3. Features are republished to GHCR
+
+**Note**: Scripts are not automatically updated - they follow the specific commit referenced by the submodule.
 
 ## Notes
 
