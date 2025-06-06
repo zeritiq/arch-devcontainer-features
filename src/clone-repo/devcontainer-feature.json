@@ -1,0 +1,26 @@
+{
+    "id": "clone-repo",
+    "version": "1.0.0",
+    "name": "Clone Repository",
+    "description": "Clones a Git repository into the container workspace",
+    "options": {
+        "repoUrl": {
+            "type": "string",
+            "default": "",
+            "description": "Git repository URL to clone (required)"
+        },
+        "targetDir": {
+            "type": "string",
+            "default": "/workspace",
+            "description": "Target directory for cloning (default: /workspace)"
+        },
+        "branch": {
+            "type": "string",
+            "default": "",
+            "description": "Specific branch to clone (optional)"
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
