@@ -1,18 +1,19 @@
 # Yay AUR Helper (yay)
 
-Устанавливает yay - популярный AUR (Arch User Repository) helper для Arch Linux.
+Installs yay - a popular AUR (Arch User Repository) helper for Arch Linux.
 
-## Описание
+## Description
 
-Yay - это AUR helper, написанный на Go, который позволяет легко устанавливать пакеты из AUR. Этот feature автоматически:
+Yay is an AUR helper written in Go that allows easy installation of packages from the AUR. This feature automatically:
 
-- Проверяет совместимость с Arch Linux
-- Устанавливает необходимые зависимости (base-devel, git)
-- Клонирует и собирает yay из AUR
-- Опционально устанавливает дополнительные AUR пакеты
+- Checks compatibility with Arch Linux
+- Installs necessary dependencies (base-devel, git)
+- Clones and builds yay from AUR
+- Optionally installs additional AUR packages
 
-## Пример использования
+## Usage
 
+### Local Development
 ```json
 {
     "features": {
@@ -21,32 +22,64 @@ Yay - это AUR helper, написанный на Go, который позво
 }
 ```
 
-### С установкой дополнительных AUR пакетов
-
+### From GitHub Container Registry
 ```json
 {
     "features": {
-        "./yay": {
-            "installPackages": "visual-studio-code-bin,discord"
+        "ghcr.io/zeritiq/arch-devcontainer-features/yay:1": {}
+    }
+}
+```
+
+### With Additional AUR Packages
+```json
+{
+    "features": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/yay:1": {
+            "installPackages": "visual-studio-code-bin,discord,google-chrome"
         }
     }
 }
 ```
 
-## Опции
+## Options
 
-| Опция | Тип | Значение по умолчанию | Описание |
-|-------|-----|----------------------|----------|
-| `installPackages` | string | `""` | Список AUR пакетов для установки (разделенных запятыми) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `installPackages` | string | `""` | Comma-separated list of AUR packages to install |
 
-## Совместимость
+## Compatibility
 
-- **Архитектура**: linux/amd64, linux/arm64
-- **Операционная система**: Arch Linux
-- **Требования**: base-devel, git (устанавливаются автоматически при необходимости)
+- **Architecture**: linux/amd64, linux/arm64
+- **Operating System**: Arch Linux
+- **Requirements**: base-devel, git (installed automatically if needed)
 
-## Примечания
+## Architecture
 
-- Feature проверяет наличие yay и пропускает установку, если yay уже установлен
-- Установка происходит в временной директории, которая очищается после завершения
-- Для установки дополнительных пакетов используется флаг `--noconfirm` для автоматического подтверждения
+This feature uses a stable architecture with Git submodules:
+
+- **Arch Linux Utilities**: Used through [bartventer/arch-devcontainer-features](https://github.com/bartventer/arch-devcontainer-features)
+- **Stable Version**: Pinned to v1.24.5 via submodule
+- **Reliability**: Local copy ensures operation without external service dependencies
+
+## Notes
+
+- Feature checks for existing yay installation and skips if already installed
+- Installation occurs in a temporary directory that is cleaned up after completion
+- Additional packages use `--noconfirm` flag for automatic confirmation
+- Correctly handles permissions for both root and non-root users
+
+## Troubleshooting
+
+If you encounter installation issues:
+
+1. Ensure the container is based on Arch Linux
+2. Check package availability in AUR
+3. Verify user has permissions to install packages
+4. Check installation logs for specific errors
+
+## Requirements
+
+- Container must be running Arch Linux
+- User must have appropriate permissions for package installation
+- Internet connection for downloading packages from AUR

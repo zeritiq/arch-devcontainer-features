@@ -1,13 +1,35 @@
-# Clone Repository Feature
+# Clone Repository (clone-repo)
 
-This feature automatically clones a Git repository into your devcontainer workspace during container creation.
+Automatically clones a Git repository into your devcontainer workspace during container creation.
+
+## Description
+
+This feature allows you to automatically clone a Git repository into a specified directory during devcontainer creation. Useful for:
+
+- Automatically getting project source code
+- Setting up workspace with required repositories
+- Cloning specific branches for development
 
 ## Usage
 
+### Local Development
 ```json
 {
     "features": {
-        "ghcr.io/zeritiq/devcontainer-features/clone-repo:1": {
+        "./clone-repo": {
+            "repoUrl": "https://github.com/user/repo.git",
+            "targetDir": "/workspace/my-project",
+            "branch": "main"
+        }
+    }
+}
+```
+
+### From GitHub Container Registry
+```json
+{
+    "features": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:1": {
             "repoUrl": "https://github.com/user/repo.git",
             "targetDir": "/workspace/my-project",
             "branch": "main"
@@ -30,7 +52,7 @@ This feature automatically clones a Git repository into your devcontainer worksp
 ```json
 {
     "features": {
-        "ghcr.io/zeritiq/devcontainer-features/clone-repo:1": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:1": {
             "repoUrl": "https://github.com/microsoft/vscode.git"
         }
     }
@@ -41,7 +63,7 @@ This feature automatically clones a Git repository into your devcontainer worksp
 ```json
 {
     "features": {
-        "ghcr.io/zeritiq/devcontainer-features/clone-repo:1": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:1": {
             "repoUrl": "https://github.com/microsoft/vscode.git",
             "targetDir": "/workspace/vscode-source"
         }
@@ -53,23 +75,66 @@ This feature automatically clones a Git repository into your devcontainer worksp
 ```json
 {
     "features": {
-        "ghcr.io/zeritiq/devcontainer-features/clone-repo:1": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:1": {
             "repoUrl": "https://github.com/microsoft/vscode.git",
             "targetDir": "/workspace/vscode-dev",
-            "branch": "main"
+            "branch": "development"
         }
     }
 }
 ```
 
+### Multiple Repositories
+```json
+{
+    "features": {
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:1": {
+            "repoUrl": "https://github.com/main-project/repo.git",
+            "targetDir": "/workspace/main"
+        },
+        "ghcr.io/zeritiq/arch-devcontainer-features/clone-repo:2": {
+            "repoUrl": "https://github.com/dependencies/repo.git",
+            "targetDir": "/workspace/deps",
+            "branch": "stable"
+        }
+    }
+}
+```
+
+## Compatibility
+
+- **Architecture**: linux/amd64, linux/arm64
+- **Operating System**: Arch Linux (and other Linux distributions)
+- **Requirements**: Git (installed automatically if needed)
+
+## Architecture
+
+This feature uses a stable architecture with Git submodules:
+
+- **Arch Linux Utilities**: Used through [bartventer/arch-devcontainer-features](https://github.com/bartventer/arch-devcontainer-features)
+- **Stable Version**: Pinned to v1.24.5 via submodule
+- **Reliability**: Local copy ensures operation without external service dependencies
+
 ## Notes
 
-- If the target directory already exists and contains files, it will be backed up with a timestamp suffix
-- The feature ensures proper ownership of cloned files for the container user
-- Git must be available in the container (typically installed in the base image)
-- If no repository URL is provided, the feature will skip cloning without errors
+- If target directory already exists and contains files, a timestamped backup is created
+- Feature ensures proper file ownership for cloned files
+- Git must be available in the container (usually installed in base image)
+- If no repository URL is provided, feature skips cloning without errors
+- Correctly handles permissions for both root and non-root users
+
+## Troubleshooting
+
+If you encounter cloning issues:
+
+1. Ensure Git is installed in the container
+2. Verify repository URL is correct
+3. Check user has write permissions to target directory
+4. Verify repository accessibility (private repositories require authentication)
+5. Ensure specified branch exists in the repository
 
 ## Requirements
 
 - Git must be installed in the container
-- The container user must have write permissions to the target directory
+- Container user must have write permissions to the target directory
+- Repository access (private repositories may require SSH key or token setup)
