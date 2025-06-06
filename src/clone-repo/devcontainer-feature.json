@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "name": "Clone Repository",
     "description": "Clones a Git repository into the container workspace",
+    "installsAfter": [
+        "ghcr.io/bartventer/arch-devcontainer-features/common-utils"
+    ],
     "options": {
         "repoUrl": {
             "type": "string",
