@@ -1,19 +1,72 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------------------------------------------------
+# Copyright (c) Zeritiq.
+# Licensed under the MIT License.
+#-----------------------------------------------------------------------------------------------------------------
+#
+# Docs: https://github.com/zeritiq/arch-devcontainer-features/tree/master/src/yay/README.md
+# Maintainer: Zeritiq
 
 set -e
 
-# Yay AUR Helper Feature
-# This feature installs yay AUR helper for Arch Linux
-
+# shellcheck disable=SC2034
 INSTALL_PACKAGES="${INSTALLPACKAGES:-}"
+USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
+
+# **************************
+# ** Utility functions **
+# **************************
+_UTILS_SETUP_SCRIPT=$(mktemp)
+curl -sSL -o "$_UTILS_SETUP_SCRIPT" https://raw.githubusercontent.com/bartventer/arch-devcontainer-features/main/scripts/archlinux_util_setup.sh
+sh "$_UTILS_SETUP_SCRIPT"
+rm -f "$_UTILS_SETUP_SCRIPT"
+
+# shellcheck disable=SC1091
+# shellcheck source=scripts/archlinux_util.sh
+. archlinux_util.sh
+
+# Setup STDERR.
+err() {
+    echo "(!) $*" >&2
+}
+
+# Source /etc/os-release to get OS info
+# shellcheck disable=SC1091
+. /etc/os-release
+
+# Run checks
+check_root
+check_system
+check_pacman
+
+# Determine the appropriate non-root user
+if [ "${USERNAME}" = "auto" ] || [ "${USERNAME}" = "automatic" ]; then
+    USERNAME=""
+    POSSIBLE_USERS=("vscode" "node" "codespace" "$(awk -v val=1000 -F ":" '$3==val{print $1}' /etc/passwd)")
+    for CURRENT_USER in "${POSSIBLE_USERS[@]}"; do
+        if id -u "${CURRENT_USER}" >/dev/null 2>&1; then
+            USERNAME=${CURRENT_USER}
+            break
+        fi
+    done
+    if [ "${USERNAME}" = "" ]; then
+        USERNAME=root
+    fi
+elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
+    USERNAME=root
+fi
+
+# Function to run commands as the appropriate user
+sudo_if() {
+    COMMAND="$*"
+    if [ "$(id -u)" -ne 0 ]; then
+        sudo $COMMAND
+    else
+        $COMMAND
+    fi
+}
 
 echo "Starting yay AUR helper installation..."
-
-# Check if we're on Arch Linux
-if [ ! -f /etc/arch-release ]; then
-    echo "Error: This feature is only compatible with Arch Linux"
-    exit 1
-fi
 
 # Check if yay is already installed
 if command -v yay &> /dev/null; then
@@ -22,11 +75,8 @@ else
     echo "Installing yay AUR helper..."
     
     # Ensure required packages are installed
-    echo "Checking for required packages (base-devel, git)..."
-    if ! pacman -Q base-devel &> /dev/null || ! pacman -Q git &> /dev/null; then
-        echo "Installing required packages..."
-        sudo pacman -Sy base-devel git --noconfirm --needed
-    fi
+    echo "Installing required packages (base-devel, git)..."
+    check_and_install_packages base-devel git
     
     # Create temporary directory for yay installation
     YAY_TMP_DIR=$(mktemp -d)
@@ -37,7 +87,14 @@ else
     
     echo "Building and installing yay..."
     cd yay
-    makepkg -si --noconfirm
+    
+    # Build as non-root user if we're currently root
+    if [ "$(id -u)" = "0" ] && [ "${USERNAME}" != "root" ]; then
+        chown -R "${USERNAME}:${USERNAME}" "$YAY_TMP_DIR"
+        sudo -u "${USERNAME}" makepkg -si --noconfirm
+    else
+        makepkg -si --noconfirm
+    fi
     
     # Clean up
     cd /
@@ -53,8 +110,12 @@ if [ -n "$INSTALL_PACKAGES" ]; then
     # Convert comma-separated list to space-separated
     PACKAGES=$(echo "$INSTALL_PACKAGES" | tr ',' ' ')
     
-    # Install packages using yay
-    yay -Sy $PACKAGES --noconfirm
+    # Install packages using yay as appropriate user
+    if [ "$(id -u)" = "0" ] && [ "${USERNAME}" != "root" ]; then
+        sudo -u "${USERNAME}" yay -Sy $PACKAGES --noconfirm
+    else
+        yay -Sy $PACKAGES --noconfirm
+    fi
     
     echo "Additional packages installed successfully!"
 fi
