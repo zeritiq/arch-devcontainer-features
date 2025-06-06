@@ -16,8 +16,43 @@ USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
 # **************************
 # ** Utility functions **
 # **************************
+
+# Function to get submodule commit hash
+get_submodule_commit() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local feature_root="$(cd "${script_dir}/../.." && pwd)"
+    
+    # Check if we're in a git repository
+    if ! git -C "$feature_root" rev-parse --git-dir >/dev/null 2>&1; then
+        echo "main" # fallback to main branch
+        return
+    fi
+    
+    # Get commit hash of submodule
+    local commit_hash
+    commit_hash=$(git -C "$feature_root" ls-tree HEAD vendor/bartventer-features 2>/dev/null | awk '{print $3}')
+    
+    if [ -n "$commit_hash" ]; then
+        echo "$commit_hash"
+    else
+        echo "main" # fallback to main branch
+    fi
+}
+
+# Get bartventer commit and setup utils
+echo "Determining bartventer-features version..."
+BARTVENTER_COMMIT=$(get_submodule_commit)
+echo "Using bartventer-features commit: $BARTVENTER_COMMIT"
+
 _UTILS_SETUP_SCRIPT=$(mktemp)
-curl -sSL -o "$_UTILS_SETUP_SCRIPT" https://raw.githubusercontent.com/zeritiq/arch-devcontainer-features/master/vendor/bartventer-features/scripts/archlinux_util_setup.sh
+UTILS_URL="https://raw.githubusercontent.com/bartventer/arch-devcontainer-features/${BARTVENTER_COMMIT}/scripts/archlinux_util_setup.sh"
+echo "Downloading utils from: $UTILS_URL"
+
+curl -sSL -o "$_UTILS_SETUP_SCRIPT" "$UTILS_URL" || {
+    echo "Failed to download from commit $BARTVENTER_COMMIT, trying main branch..."
+    curl -sSL -o "$_UTILS_SETUP_SCRIPT" "https://raw.githubusercontent.com/bartventer/arch-devcontainer-features/main/scripts/archlinux_util_setup.sh"
+}
+
 sh "$_UTILS_SETUP_SCRIPT"
 rm -f "$_UTILS_SETUP_SCRIPT"
 
