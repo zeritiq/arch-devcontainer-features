@@ -1,13 +1,16 @@
 {
     "id": "clone-repo",
     "version": "1.0.0",
-    "name": "Clone Repository",
-    "description": "Clones a Git repository into the container workspace",
+    "name": "Clone Repository with SSH Support",
+    "description": "Clones Git repositories with SSH and HTTPS support via postCreateCommand. Supports private repositories with SSH keys.",
+    "installsAfter": [
+        "ghcr.io/bartventer/arch-devcontainer-features/common-utils"
+    ],
     "options": {
         "repoUrl": {
             "type": "string",
             "default": "",
-            "description": "Git repository URL to clone (required)"
+            "description": "Git repository URL to clone (SSH or HTTPS, required)"
         },
         "targetDir": {
             "type": "string",
@@ -19,5 +22,6 @@
             "default": "",
             "description": "Specific branch to clone (optional)"
         }
-    }
+    },
+    "postCreateCommand": "/usr/local/bin/clone-repo-ssh"
 }
